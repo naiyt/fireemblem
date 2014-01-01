@@ -7,8 +7,9 @@ Q.input.keyboardControls();
 Q.input.joypadControls();
 Q.tileSize = 25;
 Q.SPRITE_TILES = 2;
-Q.PLAYER_UNIT = 3;
 
+Q.mapWidth = 7;
+Q.mapHeight = 9;
 
 Q.load('Village1.png, cursor.png, level.json, sprites.png, sprites.json, cursor.json', function(stage) {
     Q.sheet('tiles', 'Village1.png', {tileW: Q.tileSize, tileH: Q.tileSize });
@@ -25,19 +26,10 @@ Q.scene('level1', function(stage) {
     var map = stage.collisionLayer(new Q.femap());
     map.setup();
 
-    cursor = new Q.cursor(Q.tilePos(4,4));
+    cursor = new Q.cursor(Q.tilePos(1,1));
     stage.insert(cursor);
     unit = new Q.unit(Q.tilePos(4,4));
     stage.insert(unit);
-
-    Q.mapInfo = new Array(Q.mapWidth);
-    for(var i = 0; i < Q.mapInfo.length; i++) {
-        Q.mapInfo[i] = new Array(Q.mapHeight);
-    }
-
-    Q.mapInfo[unit.p.tileX][unit.p.tileY] = unit;
-    console.log(Q.mapInfo);
-
 });
 
 Q.TileLayer.extend('femap', {
@@ -64,9 +56,8 @@ Q.Sprite.extend('cursor', {
             sheet: 'cursor',
             tileX: tileLoc.x,
             tileY: tileLoc.y,
-            betweenMoves: 0.08,
-            time: 0,
-            movingUnit: false
+            betweenMoves: 0.05,
+            time: 0
         });
     },
 
@@ -89,53 +80,26 @@ Q.Sprite.extend('cursor', {
             if(Q.inputs['down'] && this.p.tileY < Q.mapHeight-1) {
                 this.p.tileY++;
             }
-
-            if(Q.inputs['fire']) {
-                var curr_tile = Q.mapInfo[this.p.tileX][this.p.tileY];
-                if(this.p.highlighted) {
-                    this.p.highlighted.move(this.p.tileX, this.p.tileY);
-                    this.p.highlighted = undefined;
-                }
-                if(curr_tile) {
-                    if(curr_tile.p.unit == Q.PLAYER_UNIT) {
-                        if(!this.p.highlighted) this.p.highlighted = unit;
-                    }
-                }
-            }
-
             var new_loc = Q.tilePos(this.p.tileX, this.p.tileY);
             this.p.x = new_loc.x;
             this.p.y = new_loc.y;
             this.p.time = 0;
         }
-
     }
 });
 
 Q.Sprite.extend('unit', {
     init: function(p) {
-        var tileLoc = Q.rowAndCol(p.x, p.y);
         this._super(p, {
             sprite: 'unit',
             sheet: 'units',
-            tileX: tileLoc.x,
-            tileY: tileLoc.y,
-            unit: Q.PLAYER_UNIT
+            tileX: 0,
+            tileY: 0,
         });
     },
 
     step: function(dt) {
 
-    },
-
-    move: function(x, y) {
-        Q.mapInfo[this.p.tileX][this.p.tileY] = undefined;
-        var newLoc = Q.tilePos(x, y);
-        this.p.tileX = x;
-        this.p.tileY = y;
-        this.p.x = newLoc.x;
-        this.p.y = newLoc.y;
-        Q.mapInfo[this.p.tileX][this.p.tileY] = this;
     }
 });
 
